@@ -1,0 +1,104 @@
+// --- 全局数据 ---
+// 测试: 全局变量、一维/二维数组的声明和初始化
+string[] student_names = {"Justin", "Anchor", "Alex"};
+float[][] student_grades = {
+    {95.5, 89.0, 92.0},  // Justin's grades
+    {78.0, 82.5, 66.0},  // Anchor's grades
+    {55.0, 61.0, 59.5}   // Alex's grades
+};
+
+// --- 函数定义 ---
+
+// 函数1: 根据分数返回字母等级
+// 测试: 函数定义、if-else if-else 链、float 类型参数、string 类型返回
+string get_grade_letter(float score) {
+    string grade = "F";
+    if (score >= 90.0) {
+        grade = "A";
+    } else if (score >= 80.0) {
+        grade = "B";
+    } else if (score >= 70.0) {
+        grade = "C";
+    } else if (score >= 60.0) {
+        grade = "D";
+    }
+    return grade;
+}
+
+// 函数2: 计算并返回平均分
+// 测试: while 循环、数组类型参数、算术运算符 (+, /)
+float calculate_average(float[] grades) {
+    float sum = 0.0;
+    int count = 3; // 因为没有 len() 函数，我们硬编码数组长度
+    int i = 0;
+    while (i < count) {
+        sum = sum + grades[i];
+        i = i + 1;
+    }
+    return sum / count;
+}
+
+// 函数3: 打印单个学生的完整报告
+// 测试: void 函数、函数间的相互调用、字符串拼接
+void print_student_report(string name, float[] grades) {
+    print("--- Student Report ---");
+    print("Name: " + name);
+
+    // 调用其他函数
+    float avg = calculate_average(grades);
+    string letter = get_grade_letter(avg);
+
+    print("Average Score:");
+    print(avg);
+    print("Final Letter Grade: " + letter);
+    print("----------------------");
+    print(""); // 打印一个空行用于分隔
+}
+
+structi test{
+    int name;
+    string year;
+    };
+
+// --- 主程序入口 ---
+anchor {
+    print("======= Mini Grade System Starting =======");
+    print("");
+
+    int num_students = 3; // 硬编码学生数量
+    int current_student_index = 0;
+
+    // 测试: 主循环、一维和二维数组的访问
+    while (current_student_index < num_students) {
+        print("Processing report for student #" + (current_student_index + 1));
+        print_student_report(student_names[current_student_index], student_grades[current_student_index]);
+        current_student_index = current_student_index + 1;
+    }
+
+    for(int te=1;te<10;te+=1){
+    print(te);
+    }
+
+    test test1;
+    test1.name=1;
+    test1.year="hello";
+
+    // 测试: switch-case-break-default 结构
+    print("======= Final Summary =======");
+    int summary_key = num_students;
+    switch (summary_key) {
+        case 1:
+            print("Processed 1 student.");
+            break;
+        case 2:
+            print("Processed 2 students.");
+            break;
+        case 3:
+            print("Processed 3 students.");
+            break;
+        default:
+            print("Processed multiple students.");
+    }
+
+    print("======= Grade System Finished =======");
+}

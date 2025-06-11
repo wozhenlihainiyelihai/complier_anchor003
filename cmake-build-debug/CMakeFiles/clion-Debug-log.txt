@@ -1,0 +1,4 @@
+/Applications/CLion.app/Contents/bin/cmake/mac/aarch64/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/Applications/CLion.app/Contents/bin/ninja/mac/aarch64/ninja -DCMAKE_C_COMPILER=/opt/homebrew/Cellar/gcc/14.2.0_1/bin/gcc-14 -DCMAKE_CXX_COMPILER=/opt/homebrew/Cellar/gcc/14.2.0_1/bin/g++-14 -G Ninja -S /Users/ac/Documents/study_files/coding/complier_anchor -B /Users/ac/Documents/study_files/coding/complier_anchor/cmake-build-debug
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /Users/ac/Documents/study_files/coding/complier_anchor/cmake-build-debug

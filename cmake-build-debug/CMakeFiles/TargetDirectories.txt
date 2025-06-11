@@ -1,0 +1,3 @@
+/Users/ac/Documents/study_files/coding/complier_anchor/cmake-build-debug/CMakeFiles/complier_anchor.dir
+/Users/ac/Documents/study_files/coding/complier_anchor/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/ac/Documents/study_files/coding/complier_anchor/cmake-build-debug/CMakeFiles/rebuild_cache.dir

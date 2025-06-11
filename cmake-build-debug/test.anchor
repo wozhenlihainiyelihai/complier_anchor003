@@ -1,0 +1,29 @@
+anchor {
+    int a = 10;
+    float b = 2.5;
+    char c = 'X';
+    string message = "Hello, World!";
+    if (a > 5 && b <= 3.0) {
+        print(message);
+        a = a + 1;
+    } else {
+        b = b - 1.0;
+    }
+    while (a < 15) {
+        print("a is: ");
+        print(a);
+        a = a + 1;
+    }
+    int result = (10 + 20) * 3 / 2;
+    bool flag = !true || false;
+    a++;
+    --b;
+    print("Final a: ");
+    print(a);
+    print("Final b: ");
+    print(b);
+    print("Result: ");
+    print(result);
+    print("Flag: ");
+    print(flag);
+}
