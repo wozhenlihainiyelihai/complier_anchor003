@@ -12,44 +12,46 @@
 class StatementListNode;
 class TypeNode;
 
+//基类
 class ASTNode {
 public:
-    enum NodeType {
-        Program,
-        StatementList,
-        DeclarationStatement,
-        AssignmentStatement,
-        IfStatement,
-        WhileStatement,
+    enum NodeType {//所有的语法结构，好吧有点乱，防止错误还是保持这样吧
+        Program,//root
+        StatementList,//语句块，语句列表，整个函数（块）
+        DeclarationStatement,//变量或者常量的声明：int a；
+        AssignmentStatement,//赋值语句 a=1
+        IfStatement,//if-else的条件语句
+        WhileStatement,//同理
         ForStatement,
         StructiDefinitionStatement,
-        MemberAccessExpression,
-        ArrayType,
-        ArrayAccessExpression,
+        MemberAccessExpression,//结构体成员访问
+        ArrayType,//数组类型
+        ArrayAccessExpression,//数组的成员访问access
         PrintStatement,
-        BinaryExpression,
-        UnaryExpression,
-        Literal,
-        Identifier,
-        Type,
-        FunctionDefinition,
-        FunctionCall,
+        BinaryExpression,//二元表达式，加减乘除等等
+        UnaryExpression,//一元表达式
+        Literal,//常量：整数，字符串，布尔型
+        Identifier,//标识符
+        Type,//基本类型或者结构体名
+        FunctionDefinition,//函数定义完全体
+        FunctionCall,//函数调用
         ReturnStatement,
         SwitchStatement,
         CaseStatement,
         BreakStatement,
         ContinueStatement,
-        InitializerList
+        InitializerList//初始化列表
     };
+    NodeType nodeType;//枚举类型，未来会强制变换为整型
+    int lineNumber; //行号
 
-    NodeType nodeType;
-    int lineNumber;
-
+public:
     ASTNode(NodeType type, int line) : nodeType(type), lineNumber(line) {}
     virtual ~ASTNode() = default;
     virtual void print(int indent = 0) const;
 };
 
+//初始化列表类
 class InitializerListNode : public ASTNode {
 public:
     std::vector<std::unique_ptr<ASTNode>> elements;
@@ -60,7 +62,7 @@ public:
     void print(int indent = 0) const override;
 };
 
-
+//根结点类
 class ProgramNode : public ASTNode {
 public:
     std::unique_ptr<ASTNode> statementList;
@@ -69,6 +71,7 @@ public:
     void print(int indent = 0) const override;
 };
 
+//语句块类，就是被大括号围起来的类
 class StatementListNode : public ASTNode {
 public:
     std::vector<std::unique_ptr<ASTNode>> statements;
@@ -81,6 +84,7 @@ public:
     void print(int indent = 0) const override;
 };
 
+//基本数据类型的名字，比如int，float还有自己命名的结构体
 class TypeNode : public ASTNode {
 public:
     std::string typeName;
@@ -89,11 +93,11 @@ public:
     void print(int indent = 0) const override;
 };
 
-// --- 修改: elementType 现在是 ASTNode* 以支持嵌套 ---
+//数组类型存储
 class ArrayTypeNode : public ASTNode {
 public:
-    std::unique_ptr<ASTNode> elementType;
-    std::unique_ptr<ASTNode> sizeExpression;
+    std::unique_ptr<ASTNode> elementType;//数组类型
+    std::unique_ptr<ASTNode> sizeExpression;//大小，动态数组设为空
 
     ArrayTypeNode(std::unique_ptr<ASTNode> elemType, std::unique_ptr<ASTNode> sizeExpr, int line)
         : ASTNode(NodeType::ArrayType, line),
@@ -102,11 +106,12 @@ public:
     void print(int indent = 0) const override;
 };
 
+//变量语句存储
 class DeclarationStatementNode : public ASTNode {
 public:
-    std::unique_ptr<ASTNode> typeSpecifier;
-    std::string identifierName;
-    std::unique_ptr<ASTNode> initialValue;
+    std::unique_ptr<ASTNode> typeSpecifier;//类型，可以是typenode也可以是arraynode
+    std::string identifierName;//名字
+    std::unique_ptr<ASTNode> initialValue;//初值
 
     DeclarationStatementNode(std::unique_ptr<ASTNode> typeSpec, const std::string& idName,
                              std::unique_ptr<ASTNode> initVal, int line)
@@ -137,6 +142,7 @@ public:
     void print(int indent = 0) const override;
 };
 
+//点操作符，成员访问
 class MemberAccessNode : public ASTNode {
 public:
     std::unique_ptr<ASTNode> structExpr;
@@ -147,6 +153,7 @@ public:
     void print(int indent = 0) const override;
 };
 
+//赋值语句
 class AssignmentStatementNode : public ASTNode {
 public:
     std::unique_ptr<ASTNode> leftHandSide;

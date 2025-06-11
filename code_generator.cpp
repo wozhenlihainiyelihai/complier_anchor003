@@ -13,28 +13,30 @@ CodeGenerator::CodeGenerator(const std::vector<Quadruple>& quads, SymbolTable& s
 // 主生成函数，协调所有步骤
 string CodeGenerator::generate() {
     assembly_code.str(""); // 清空旧内容
-    preprocess_data();
+    preprocess_data();// 预处理数据（字符串字面量和函数栈帧布局）
 
-    assembly_code << ".MODEL SMALL" << endl;
-    assembly_code << ".STACK 200h" << endl;
+    assembly_code << ".MODEL SMALL" << endl;// 小型内存模型
+    assembly_code << ".STACK 200h" << endl;// 设置512字节的栈空间
 
-    generateDataSegment();
-    generateCodeSegment();
+    generateDataSegment();// 生成数据段
+    generateCodeSegment();// 生成代码段
 
-    return assembly_code.str();
+    return assembly_code.str();// 返回生成的汇编代码
 }
 
 // 预处理四元式，为数据段和代码段的生成做准备
 void CodeGenerator::preprocess_data() {
     // 第一遍：收集所有字符串字面量
     for (const auto& q : quadruples) {
-        // 字符串可能出现在 PRINT, =, + 等多种操作中
+        // 检查四元式的每个操作数，字符串可能出现在 PRINT, =, + 等多种操作中
         const string* ops[] = {&q.arg1, &q.arg2, &q.res};
         for(const auto* op : ops) {
             if (op && op->length() > 1 && op->front() == '"') {
+                // 如果是字符串字面量且未处理过
                 if (string_literals.find(*op) == string_literals.end()) {
+                    // 生成唯一标签(如LC0, LC1...)
                     string label = "LC" + to_string(string_literal_counter++);
-                    string_literals[*op] = label;
+                    string_literals[*op] = label;// 存储映射关系
                 }
             }
         }
@@ -57,14 +59,18 @@ void CodeGenerator::preprocess_data() {
                 if (!in_func_body) continue;
                 if (q_inner.op == "FUNC_END" && q_inner.arg1 == active_function_name) break;
 
+                // 检查所有操作数
                 const string* operands[] = {&q_inner.arg1, &q_inner.arg2, &q_inner.res};
                 for (const auto* op_ptr : operands) {
                     const string& op_name = *op_ptr;
+                    // 跳过空操作数、临时变量、数字和字符串字面量
                     if (op_name.empty() || op_name == "_" || isdigit(op_name[0]) || op_name.front() == '"' || op_name.front() == '\'') continue;
 
+                    // 查找符号
                     const Symbol* sym = symbolTable.lookup(op_name);
                     if(sym && sym->scopeLevel == 0) continue; // 全局变量，不在栈上
 
+                    // 检查是否是参数
                     bool is_param = false;
                     const Symbol* func_sym = symbolTable.lookup(active_function_name);
                     if(func_sym) for(const auto& p : func_sym->type->parameters) if(p.name == op_name) is_param = true;
@@ -72,16 +78,19 @@ void CodeGenerator::preprocess_data() {
                     // 如果不是参数，并且尚未分配，则在栈上为其分配空间
                     if (!is_param && current_layout.find(op_name) == current_layout.end()) {
                         int size_to_alloc = 2; // 默认为 WORD
+                        // 处理数组声明
                          if ((q_inner.op == "DEC_ARRAY" || q_inner.op == "DEC_DYN_ARRAY") && q_inner.arg1 == op_name) {
                             try {
                                 size_to_alloc = stoi(q_inner.arg2) * 2; // 静态数组
                             } catch(...) { size_to_alloc = 2; } // 动态数组本身只存指针
                          }
                         current_local_offset += size_to_alloc;
+                        // 记录变量在栈帧中的偏移和大小
                         current_layout[op_name] = {-current_local_offset, size_to_alloc};
                     }
                 }
             }
+            // 记录函数的总局部变量大小
             function_local_sizes[active_function_name] = current_local_offset;
         }
     }
@@ -91,21 +100,23 @@ void CodeGenerator::preprocess_data() {
 // 生成 .DATA 数据段
 void CodeGenerator::generateDataSegment() {
     assembly_code << "\n.DATA" << endl;
-    assembly_code << "    int_fmt db \"%d\", 10, 0" << endl;
-    assembly_code << "    str_fmt db \"%s\", 10, 0" << endl;
+    // 打印格式字符串
+    assembly_code << "    int_fmt db \"%d\", 10, 0" << endl;// 整数格式，带换行
+    assembly_code << "    str_fmt db \"%s\", 10, 0" << endl;// 字符串格式，带换行
 
-    // 新增: 为字符串操作添加缓冲区
+    //为字符串操作添加缓冲区
     assembly_code << "    int_str_buffer db 12 dup(0)      ; 用于 _itoa 转换整数为字符串" << endl;
     assembly_code << "    concat_buffer db 256 dup(0)     ; 用于字符串拼接的结果" << endl;
 
+    // 处理字符串字面量
     for (const auto& pair : string_literals) {
-        string sanitized_str = pair.first.substr(1, pair.first.length() - 2);
+        string sanitized_str = pair.first.substr(1, pair.first.length() - 2);// 去掉引号
         // 处理转义字符，例如 `\n`
         string final_str;
         for(size_t i = 0; i < sanitized_str.length(); ++i) {
             if (sanitized_str[i] == '\\' && i + 1 < sanitized_str.length()) {
                 if (sanitized_str[i+1] == 'n') {
-                    final_str += "\", 10, \""; // 换行
+                    final_str += "\", 10, \""; // 将\n转换为汇编的换行(ASCII 10)
                     i++;
                 } else {
                     final_str += sanitized_str[i]; // 其他转义字符暂不处理
@@ -114,6 +125,7 @@ void CodeGenerator::generateDataSegment() {
                 final_str += sanitized_str[i];
             }
         }
+        // 生成字符串定义
         assembly_code << "    " << pair.second << " db \"" << final_str << "\", 0" << endl;
     }
 
@@ -122,7 +134,7 @@ void CodeGenerator::generateDataSegment() {
     for (const auto& pair : symbols) {
         const auto& sym = pair.second;
         if (sym.category == SymbolCategory::Variable && sym.scopeLevel == 0) {
-             assembly_code << "    " << sym.name << " dw ?" << endl;
+             assembly_code << "    " << sym.name << " dw ?" << endl;// 定义未初始化的字(word)
         }
     }
 }
@@ -130,9 +142,10 @@ void CodeGenerator::generateDataSegment() {
 // 生成 .CODE 代码段
 void CodeGenerator::generateCodeSegment() {
     assembly_code << "\n.CODE" << endl;
-    // 新增: 声明需要用到的C库函数
+    //声明需要用到的C库函数
     assembly_code << "EXTERN _printf : NEAR, _itoa : NEAR, _strcpy : NEAR, _strcat : NEAR" << endl;
 
+    // 主程序入口
     assembly_code << "\nmain PROC" << endl;
     emit("mov ax, @data", "设置数据段寄存器");
     emit("mov ds, ax");
@@ -141,21 +154,23 @@ void CodeGenerator::generateCodeSegment() {
     emit("int 21h");
     assembly_code << "main ENDP" << endl;
 
+    // 为每个四元式生成代码
     for (const auto& quad : quadruples) {
         generateForQuad(quad);
     }
 
-    assembly_code << "\nEND main" << endl;
+    assembly_code << "\nEND main" << endl;// 程序结束
 }
 
 
-// 新增: 获取操作数的类型信息
+//获取操作数的类型信息
 shared_ptr<TypeInfo> CodeGenerator::getOperandType(const string& operand) {
     if (operand.empty() || operand == "_") return symbolTable.lookupType("void");
     if (isdigit(operand[0]) || (operand.length() > 1 && operand[0] == '-')) return symbolTable.lookupType("int");
     if (operand == "true" || operand == "false") return symbolTable.lookupType("bool");
     if (operand.front() == '"') return symbolTable.lookupType("string");
 
+    // 查找符号表中的类型
     const Symbol* sym = symbolTable.lookup(operand);
     if (sym) return sym->type;
 
@@ -164,9 +179,12 @@ shared_ptr<TypeInfo> CodeGenerator::getOperandType(const string& operand) {
 
 // 为单个四元式生成代码，这是一个总的分发器
 void CodeGenerator::generateForQuad(const Quadruple& q) {
+    // 添加四元式作为注释
     assembly_code << "\n    ; " << q.toString() << endl;
 
+    // 根据操作类型分发处理
     if (q.op == "=") {
+        // 赋值操作
         emit("mov ax, " + getOperandAddress(q.arg1));
         emit("mov " + getOperandAddress(q.res) + ", ax");
     } else if (q.op == "+") {
@@ -175,7 +193,7 @@ void CodeGenerator::generateForQuad(const Quadruple& q) {
         auto type2 = getOperandType(q.arg2);
 
         if (type1 && type2 && (type1->name == "string" || type2->name == "string")) {
-            handleStringConcat(q);
+            handleStringConcat(q);// 字符串拼接
         } else {
             // 默认进行整数加法
             emit("mov ax, " + getOperandAddress(q.arg1));
@@ -301,7 +319,7 @@ void CodeGenerator::handleStringConcat(const Quadruple& q) {
         emit("add sp, 4");
     }
 
-    // --- 结果 ---
+    // 存储结果
     // 将最终拼接好的字符串 (位于concat_buffer) 的地址存入结果变量
     emit("mov ax, OFFSET concat_buffer");
     emit("mov " + getOperandAddress(q.res) + ", ax");
@@ -309,26 +327,28 @@ void CodeGenerator::handleStringConcat(const Quadruple& q) {
 
 // 获取操作数的有效地址字符串
 string CodeGenerator::getOperandAddress(const std::string& operand) {
+    // 处理特殊操作数
     if (operand.empty() || operand == "_") return "";
-    if (isdigit(operand[0]) || (operand.length() > 1 && operand[0] == '-')) return operand;
+    if (isdigit(operand[0]) || (operand.length() > 1 && operand[0] == '-')) return operand;// 立即数
     if (operand == "true") return "1";
     if (operand == "false") return "0";
-    if (string_literals.count(operand)) return "OFFSET " + string_literals.at(operand);
+    if (string_literals.count(operand)) return "OFFSET " + string_literals.at(operand);// 字符串字面量地址
 
     // 局部变量或临时变量
     if (!current_function.empty() && function_frames_layout.count(current_function) && function_frames_layout.at(current_function).count(operand)) {
         return "WORD PTR [bp" + to_string(function_frames_layout.at(current_function).at(operand).offset) + "]";
     }
 
-    // 参数
+    // 函数参数
     const Symbol* func_sym = symbolTable.lookup(current_function);
     if (func_sym && func_sym->type->kind == TypeKind::FUNCTION) {
         int param_offset = 4; // BP(2) + RET(2)
+        // 反向查找参数
         for (int i = func_sym->type->parameters.size() - 1; i >= 0; --i) {
             if (func_sym->type->parameters[i].name == operand) {
                 return "WORD PTR [bp + " + to_string(param_offset) + "]";
             }
-            param_offset += 2; // WORD size
+            param_offset += 2; // WORD size每个参数占2字节
         }
     }
     return "WORD PTR " + operand; // 全局变量
@@ -340,8 +360,11 @@ void CodeGenerator::handleFunctionBegin(const Quadruple& q) {
     string proc_name = (q.arg1 == "main") ? "anchor_main" : q.arg1;
     assembly_code << "\n" << proc_name << " PROC" << endl;
 
+    // 标准函数序言
     emit("push bp", "保存旧的基址指针");
     emit("mov bp, sp", "设置新的基址指针");
+
+    // 为局部变量分配栈空间
     if (function_local_sizes.count(current_function)) {
         int total_local_size = function_local_sizes.at(current_function);
         if (total_local_size > 0) {
@@ -353,6 +376,7 @@ void CodeGenerator::handleFunctionBegin(const Quadruple& q) {
 // 处理函数结束
 void CodeGenerator::handleFunctionEnd(const Quadruple& q) {
     string proc_name = (q.arg1 == "main") ? "anchor_main" : q.arg1;
+    // 标准函数尾声
     emit("mov sp, bp", "释放局部变量空间");
     emit("pop bp", "恢复旧的基址指针");
     emit("ret", "返回");
@@ -365,7 +389,6 @@ void CodeGenerator::handleReturn(const Quadruple& q) {
     if (q.arg1 != "_") {
         emit("mov ax, " + getOperandAddress(q.arg1), "将返回值放入ax");
     }
-    // 在返回前恢复栈帧
     emit("mov sp, bp");
     emit("pop bp");
     emit("ret");
@@ -455,7 +478,7 @@ void CodeGenerator::handleStoreAt(const Quadruple& q) {
     emit("mov [si], ax", "存入内存");
 }
 
-// 处理从数组成员取值
+// 处理从数组成员取值，发射汇编指令
 void CodeGenerator::handleLoadAt(const Quadruple& q) {
     // 四元式: (LOAD_AT, dest, base, index)
     emit("mov bx, " + getOperandAddress(q.res), "将 index 放入 bx");
@@ -475,7 +498,7 @@ void CodeGenerator::handleLoadAt(const Quadruple& q) {
 }
 
 void CodeGenerator::handleGetParam(const Quadruple& q) {
-    // 在当前模型中，参数直接通过 [bp+offset] 访问，此指令无需生成代码
+    //参数直接通过 [bp+offset] 访问，此指令无需生成代码
 }
 
 // 发射单条汇编指令，附带可选注释

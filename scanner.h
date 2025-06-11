@@ -14,13 +14,13 @@ private:
     int currentLine;
     int currentColumn;
 
-    // --- 使用双端队列作为预读缓冲区 ---
+    // 使用双端队列作为预读缓冲区
     std::deque<Token> lookaheadBuffer;
 
-    // --- 核心词法分析逻辑 (现在是私有的) ---
+    // 核心词法分析逻辑 (现在是私有的)
     Token fetchNextToken();
 
-    // --- 内部辅助函数 ---
+    // 内部辅助函数
     char getNextCharInternal();
     bool isWhitespace(char c) const;
     bool isDigit(char c) const;
@@ -34,14 +34,14 @@ private:
     Token processIdentifierOrKeyword();
     Token processOperatorOrDelimiter();
 
-    // --- 填充缓冲区的方法 ---
+    // 填充缓冲区的方法
     void ensureLookahead(int k);
 
 public:
     Scanner(const std::string& filename);
     ~Scanner();
 
-    // --- 公共接口 ---
+    // 公共接口
     Token getNextToken(); // 从缓冲区获取或直接扫描新Token
     const Token& peekToken(int k = 1); // 预读第k个Token
 

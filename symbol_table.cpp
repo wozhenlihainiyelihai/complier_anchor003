@@ -99,7 +99,7 @@ std::shared_ptr<TypeInfo> SymbolTable::lookupType(const std::string& typeName) {
     return nullptr; // 未找到
 }
 
-// 添加新的用户定义类型（如 struct）
+// 添加新的用户定义类型
 void SymbolTable::addType(const std::string& typeName, std::shared_ptr<TypeInfo> typeInfo) {
     if (knownTypes.count(typeName)) {
         // 错误处理：类型重定义
@@ -117,7 +117,7 @@ void SymbolTable::dumpCurrentScope() const {
             const Symbol& sym = pair.second;
             cout << "  " << sym.name << " (类型: " << (sym.type ? sym.type->name : "null")
                  << ", 类别: " << static_cast<int>(sym.category)
-                 << ", 层级: " << sym.scopeLevel // **新增**: 打印层级
+                 << ", 层级: " << sym.scopeLevel // 打印层级
                  << ", 行号: " << sym.lineDeclared << ")" << endl;
         }
     } else {
@@ -151,7 +151,7 @@ void SymbolTable::dumpAll() const {
         const Symbol& sym = pair.second;
         cout << "  " << sym.name << " (类型: " << (sym.type ? sym.type->name : "null")
              << ", 类别: " << static_cast<int>(sym.category)
-             << ", 层级: " << sym.scopeLevel // 新增打印层级
+             << ", 层级: " << sym.scopeLevel // 打印层级
              << ", 行号: " << sym.lineDeclared << ")" << endl;
     }
     cout << "--- 所有曾声明的符号结束 ---" << endl;

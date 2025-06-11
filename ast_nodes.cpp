@@ -1,38 +1,38 @@
 #include "ast_nodes.h"
-#include "parser.h" // For tokenTypeToString
+#include "parser.h"
 #include <iostream>
 
 using namespace std;
 
-// 内部辅助函数：用于打印指定数量的缩进空格
+// 辅助：打印指定数量的indent缩进空格（为了ast生成更加美观……好吧其实没有什么大用，但是写了就不想删了🤣）
 void printIndent(int indent) {
     for (int i = 0; i < indent; ++i) {
         cout << "  ";
     }
 }
 
-// --- ASTNode 基类 ---
+//下面是众多print实现：基本都是三个模式：1. 打印自身信息 2. 递归子节点 3. 处理空指针，如果空就会推出，避免崩溃
+// ASTNode 基类：如果派生类忘记override自己的print方法，调用就会执行这个版本。
 void ASTNode::print(int indent) const {
     printIndent(indent);
     cout << "ASTNode (节点类型: " << static_cast<int>(nodeType) << ", 行号: " << lineNumber << ")" << endl;
 }
 
-// --- InitializerListNode 的 print 实现 ---
 void InitializerListNode::print(int indent) const {
     printIndent(indent);
     cout << "InitializerListNode (初始化列表, 行号: " << lineNumber << ", 元素数量: " << elements.size() << ")" << endl;
-    for(const auto& elem : elements) {
+    for(const auto& elem : elements) {//unique_ptr保证其作用范围，不会收到其他函数影响
         if(elem) {
             elem->print(indent + 1);
         }
     }
 }
 
-// --- Program & Statement Nodes ---
+//打印根结点
 void ProgramNode::print(int indent) const {
     printIndent(indent);
     cout << "ProgramNode (程序根节点, 行号: " << lineNumber << ")" << endl;
-    if (statementList) {
+    if (statementList) { //如果子节点不是空的
         statementList->print(indent + 1);
     }
 }

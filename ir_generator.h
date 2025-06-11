@@ -33,20 +33,20 @@ private:
     std::vector<std::string> breakLabels;
     std::vector<std::string> continueLabels;
 
-    // --- 核心遍历方法 ---
+    // 核心遍历方法
     void generate(ASTNode* node);
     ExpressionResult generateExpression(ASTNode* node, bool needsLValue = false);
 
-    // 辅助函数，用于从AST类型节点获取符号表类型信息 ---
+    // 辅助函数，用于从AST类型节点获取符号表类型信息
     std::shared_ptr<TypeInfo> getTypeFromNode(ASTNode* typeNode);
 
-    // --- 语义分析辅助函数 ---
+    // 语义分析辅助函数
     void reportSemanticError(int line, const std::string& message);
     std::shared_ptr<TypeInfo> getExpressionType(ASTNode* node);
     bool checkAssignmentCompatibility(const std::shared_ptr<TypeInfo>& target, const std::shared_ptr<TypeInfo>& source, int line);
     std::shared_ptr<TypeInfo> checkOperationType(const std::shared_ptr<TypeInfo>& type1, const std::shared_ptr<TypeInfo>& type2, const std::string& op, int line);
 
-    // --- 各AST节点的生成函数 ---
+    // 各AST节点的生成函数
     void generateStatementList(StatementListNode* node);
 
     std::string recursivelyInitializeArray(const std::string& nameHint,const std::shared_ptr<TypeInfo>& type, InitializerListNode* initList);
@@ -65,7 +65,7 @@ private:
     void generateContinueStatement(ContinueStatementNode* node);
 
 
-    // --- 表达式的生成函数 ---
+    // 表达式的生成函数
     ExpressionResult generateFunctionCall(FunctionCallNode* node);
     ExpressionResult generateArrayAccess(ArrayAccessNode* node, bool needsLValue);
     ExpressionResult generateBinaryExpression(BinaryExpressionNode* node);
