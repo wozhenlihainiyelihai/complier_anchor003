@@ -47,3 +47,12 @@
 1523	1965	1750404336925155704	complier_anchor	b9b954641884de18
 3	591	1750410674459583243	CMakeFiles/complier_anchor.dir/main.cpp.o	c045bbc80f5eee7
 592	639	1750410675048305706	complier_anchor	b9b954641884de18
+3	2112	1751117097413773012	CMakeFiles/complier_anchor.dir/scanner.cpp.o	45826e443efa63e4
+3	2113	1751117097413997845	CMakeFiles/complier_anchor.dir/ast_nodes.cpp.o	7992db2334aac01c
+2	2141	1751117097413385762	CMakeFiles/complier_anchor.dir/main.cpp.o	c045bbc80f5eee7
+3	2150	1751117097413651929	CMakeFiles/complier_anchor.dir/symbol_table.cpp.o	e1eb6a7353b41ab4
+3	2183	1751117097414101721	CMakeFiles/complier_anchor.dir/ir_generator.cpp.o	4c00fe905d5ddd1f
+4	2184	1751117097414711929	CMakeFiles/complier_anchor.dir/code_generator.cpp.o	15bdede16fcc5953
+3	2222	1751117097413877512	CMakeFiles/complier_anchor.dir/parser.cpp.o	4a50e21ad1d18ceb
+3	2233	1751117097414212137	CMakeFiles/complier_anchor.dir/optimizer.cpp.o	ae05a3da9b933454
+2233	2702	1751117099644412591	complier_anchor	b9b954641884de18
