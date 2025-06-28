@@ -218,7 +218,7 @@ say_hello();
   - **CMake**: 版本 3.10 或更高。
   - **C++ 编译器**: 支持 C++17 标准的编译器（如 GCC, Clang）。
   - **Make** 或其他构建工具 (如 Ninja)。
-  - **(可选) IDE**: CLion 或 Visual Studio Code (with CMake Tools) 可以简化构建过程。
+  - **IDE**: CLion 或 Visual Studio Code (with CMake Tools) 可以简化构建过程。
   - **Ps、本人运行时环境**：CLion2025.3.4—— 21.0.6+8-b631.39 aarch64 (JCEF 122.1.9)VM: OpenJDK 64-Bit Server VM，JetBrains s.r.o.
   - **汇编语言**：MASM6.11版本下的intel x86 16位汇编
 
@@ -272,5 +272,3 @@ make
 
 <!-- end list -->
 
-```
-```
