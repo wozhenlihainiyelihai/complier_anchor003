@@ -19,7 +19,7 @@
 #include "tinyfiledialogs.h"
 using namespace std;
 
-#define MY_SOURCE_NAME "test_ir_correct.anchor"
+#define MY_SOURCE_NAME "test/test_ir_correct.anchor"
 
 int main(int argc, char* argv[]) {
     initializeKeywordMap();
